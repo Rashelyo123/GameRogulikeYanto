@@ -5,7 +5,6 @@ public class PlayerWeaponManager : MonoBehaviour
 {
     public GameObject weaponAPrefab;
     public GameObject weaponBPrefab;
-    public GameObject weaponCPrefab;
     public Transform weaponParent;
 
     void Start()
@@ -23,9 +22,7 @@ public class PlayerWeaponManager : MonoBehaviour
                 selectedWeaponPrefab = weaponBPrefab;
                 break;
 
-            case "WeaponC":
-                selectedWeaponPrefab = weaponCPrefab;
-                break;
+
             default:
                 Debug.LogWarning("Unknown weapon selected!");
                 selectedWeaponPrefab = weaponAPrefab;

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using Unity.VisualScripting;
+using UnityEngine.UI;
 
 public class ExperienceManager : MonoBehaviour
 {
@@ -24,6 +24,11 @@ public class ExperienceManager : MonoBehaviour
     public GameObject weaponBonekaSantet;
     [Header("Weapon spawn points")]
     public Transform weaponSpawnpoint;
+    [Header("Weapon Slot UI")]
+    public Transform weaponSlotContainer; // tempat munculnya slot senjata
+    public GameObject weaponSlotPrefab; // prefab UI slot senjata
+    public Sprite spritePaku, spriteKeris, spriteBukuMantra, spriteBonekaSantet;
+    private Dictionary<UpgradeType, Sprite> weaponIcons;
 
     // Current stats
     private int currentLevel = 1;
@@ -54,6 +59,7 @@ public class ExperienceManager : MonoBehaviour
         {
             Debug.LogWarning("PlayerStats component not found on ExperienceManager!");
         }
+        InitializeWeaponIcons();
 
         CalculateXPRequired();
 
@@ -65,6 +71,29 @@ public class ExperienceManager : MonoBehaviour
         if (levelUpPanel != null)
             levelUpPanel.SetActive(false);
     }
+    void InitializeWeaponIcons()
+    {
+        weaponIcons = new Dictionary<UpgradeType, Sprite>()
+    {
+        { UpgradeType.UnlockWeaponPaku, spritePaku },
+        { UpgradeType.UnlockWeaponKeris, spriteKeris },
+        { UpgradeType.UnlockWeaponBukuMantra, spriteBukuMantra },
+        { UpgradeType.UnlockWeaponBonekaSantet, spriteBonekaSantet },
+    };
+    }
+    void ShowWeaponInSlot(UpgradeType weaponType)
+    {
+        if (weaponIcons.ContainsKey(weaponType))
+        {
+            GameObject newSlot = Instantiate(weaponSlotPrefab, weaponSlotContainer);
+            Image img = newSlot.GetComponent<Image>();
+            if (img != null)
+            {
+                img.sprite = weaponIcons[weaponType];
+            }
+        }
+    }
+
 
     public void GainXP(float amount)
     {
@@ -268,8 +297,9 @@ public class ExperienceManager : MonoBehaviour
             case UpgradeType.UnlockWeaponPaku:
                 if (!unlockedWeapons.Contains(UpgradeType.UnlockWeaponPaku))
                 {
-                    Instantiate(weaponPaku, weaponSpawnpoint.position, Quaternion.identity);
+                    Instantiate(weaponPaku, weaponSpawnpoint.position, Quaternion.identity, weaponSpawnpoint);
                     unlockedWeapons.Add(UpgradeType.UnlockWeaponPaku);
+                    ShowWeaponInSlot(UpgradeType.UnlockWeaponPaku); // Tambah baris ini
                 }
                 break;
             case UpgradeType.UnlockWeaponKeris:
@@ -277,20 +307,23 @@ public class ExperienceManager : MonoBehaviour
                 {
                     Instantiate(weaponKeris, weaponSpawnpoint.position, Quaternion.identity);
                     unlockedWeapons.Add(UpgradeType.UnlockWeaponKeris);
+                    ShowWeaponInSlot(UpgradeType.UnlockWeaponKeris); // Tambah baris ini
                 }
                 break;
             case UpgradeType.UnlockWeaponBukuMantra:
                 if (!unlockedWeapons.Contains(UpgradeType.UnlockWeaponBukuMantra))
                 {
-                    Instantiate(weaponBukuMantra, weaponSpawnpoint.position, Quaternion.identity);
+                    Instantiate(weaponBukuMantra, weaponSpawnpoint.position, Quaternion.identity, weaponSpawnpoint);
                     unlockedWeapons.Add(UpgradeType.UnlockWeaponBukuMantra);
+                    ShowWeaponInSlot(UpgradeType.UnlockWeaponBukuMantra); // Tambah baris ini
                 }
                 break;
             case UpgradeType.UnlockWeaponBonekaSantet:
                 if (!unlockedWeapons.Contains(UpgradeType.UnlockWeaponBonekaSantet))
                 {
-                    Instantiate(weaponBonekaSantet, weaponSpawnpoint.position, Quaternion.identity);
+                    Instantiate(weaponBonekaSantet, weaponSpawnpoint.position, Quaternion.identity, weaponSpawnpoint);
                     unlockedWeapons.Add(UpgradeType.UnlockWeaponBonekaSantet);
+                    ShowWeaponInSlot(UpgradeType.UnlockWeaponBonekaSantet); // Tambah baris ini
                 }
                 break;
 

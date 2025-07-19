@@ -47,12 +47,12 @@ public class ChoseWeaponMenu : MonoBehaviour
         switch (weaponName)
         {
             case "WeaponA":
-                weaponDescriptionText.text = "Weapon A: A powerful weapon with high damage.";
-                weaponSkillDescriptionText.text = "Skill: Fire a burst of energy that deals damage to enemies.";
+                weaponDescriptionText.text = "Weapon Celurit: Slice through enemies with a powerful slash.";
+                weaponSkillDescriptionText.text = "Skill: Slash.";
                 break;
             case "WeaponB":
-                weaponDescriptionText.text = "Weapon B: A balanced weapon with moderate damage.";
-                weaponSkillDescriptionText.text = "Skill: Launch a shockwave that stuns enemies.";
+                weaponDescriptionText.text = "Weapon AirGarem: A Salted water that has been meticulously crafted using secret recipe that can damage evil spirit ";
+                weaponSkillDescriptionText.text = "Skill: Deal AOE Splash to all Direction within certain range of character";
                 break;
             case "WeaponC":
                 weaponDescriptionText.text = "Weapon C: A fast weapon with low damage.";

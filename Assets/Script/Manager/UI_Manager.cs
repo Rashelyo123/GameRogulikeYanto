@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using System;
+using System.Xml.Serialization;
 
 public class UIManager : MonoBehaviour
 {
@@ -305,5 +307,10 @@ public class UIManager : MonoBehaviour
             experienceManager.OnXPProgressChanged -= UpdateXPBar;
             experienceManager.OnLevelChanged -= UpdateLevelText;
         }
+    }
+
+    public void SwitchScene(string sceneName)
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
 }
