@@ -97,4 +97,8 @@ public class WeaponSlice : MonoBehaviour
             Gizmos.DrawWireSphere(attackOrigin.position, slashOffset);
         }
     }
+    public void UpgradeDamage(float multiplier)
+    {
+        damage *= multiplier;
+    }
 }

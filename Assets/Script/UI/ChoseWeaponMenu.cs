@@ -10,7 +10,7 @@ public class ChoseWeaponMenu : MonoBehaviour
     [Header("UI Elements")]
     public Button weaponAButton;
     public Button weaponBButton;
-    public Button WeaponCButton;
+    // public Button WeaponCButton;
     public Button playGameButton;
     public TextMeshProUGUI weaponDescriptionText;
     public TextMeshProUGUI weaponSkillDescriptionText;
@@ -28,7 +28,7 @@ public class ChoseWeaponMenu : MonoBehaviour
         // Listener untuk tombol
         weaponAButton.onClick.AddListener(() => SelectWeapon("WeaponA"));
         weaponBButton.onClick.AddListener(() => SelectWeapon("WeaponB"));
-        WeaponCButton.onClick.AddListener(() => SelectWeapon("WeaponC"));
+        // WeaponCButton.onClick.AddListener(() => SelectWeapon("WeaponC"));
         playGameButton.onClick.AddListener(PlayGame);
 
         string selectedWeapon = PlayerPrefs.GetString("SelectedWeapon", defaultWeapon);
@@ -54,10 +54,10 @@ public class ChoseWeaponMenu : MonoBehaviour
                 weaponDescriptionText.text = "Weapon AirGarem: A Salted water that has been meticulously crafted using secret recipe that can damage evil spirit ";
                 weaponSkillDescriptionText.text = "Skill: Deal AOE Splash to all Direction within certain range of character";
                 break;
-            case "WeaponC":
-                weaponDescriptionText.text = "Weapon C: A fast weapon with low damage.";
-                weaponSkillDescriptionText.text = "Skill: Rapidly fire bullets that pierce through enemies.";
-                break;
+                // case "WeaponC":
+                //     weaponDescriptionText.text = "Weapon C: A fast weapon with low damage.";
+                //     weaponSkillDescriptionText.text = "Skill: Rapidly fire bullets that pierce through enemies.";
+                //     break;
         }
 
     }

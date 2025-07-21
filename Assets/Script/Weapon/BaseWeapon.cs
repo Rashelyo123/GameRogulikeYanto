@@ -7,6 +7,7 @@ public abstract class BaseWeapon : MonoBehaviour
     [SerializeField] protected float fireRate = 1f;
     [SerializeField] protected float range = 5f;
     [SerializeField] protected float criticalChance = 0.1f;
+    [SerializeField] protected float attackCooldown = 1f;
 
     protected float nextFireTime;
     protected Camera mainCamera;

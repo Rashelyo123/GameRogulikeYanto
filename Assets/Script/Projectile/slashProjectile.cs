@@ -7,7 +7,7 @@ public class slashProjectile : MonoBehaviour
     public void SetDamage(int newDamage)
     {
         damage = newDamage;
-        Debug.Log("Damage set to: " + damage);
+        //Debug.Log("Damage set to: " + damage);
     }
 
     void OnTriggerEnter2D(Collider2D collision)

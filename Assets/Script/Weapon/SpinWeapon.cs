@@ -9,51 +9,41 @@ public class SpinAttackWeapon : BaseWeapon
     public float spinDuration = 1f;
 
     [Header("Orbit Animation")]
-    public Transform player; // Reference to player
+    public Transform player;
     public float orbitRadius = 2f;
-    public float orbitSpeed = 360f; // degrees per second
-    public int weaponCount = 1; // How many weapons orbit around player
+    public float orbitSpeed = 360f;
+    public int weaponCount = 1;
 
     [Header("Visual Effects")]
     public bool showTrail = true;
     public Color trailColor = Color.white;
     public float trailWidth = 0.1f;
 
+    [Header("Upgrade Settings")]
+    public int level = 1;
+    public int maxLevel = 5;
+    public float damagePerLevel = 1f;
+    public float radiusPerLevel = 0.3f;
+    public float durationPerLevel = 0.2f;
+    public int weaponCountPerLevel = 1;
+
     private bool isSpinning = false;
     private List<GameObject> orbitingWeapons = new List<GameObject>();
 
     void Start()
     {
-        // Auto-assign player if not set
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
+            if (playerObj != null) player = playerObj.transform;
         }
     }
 
     protected override void PerformAttack()
     {
-        // Make sure player is assigned
-        if (player == null)
-        {
-            GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
-        }
-
         if (!isSpinning && player != null)
         {
             StartCoroutine(PerformSpinAttack());
-        }
-        else if (player == null)
-        {
-            Debug.LogWarning("SpinAttackWeapon: Player reference is null! Make sure Player GameObject has 'Player' tag.");
         }
     }
 
@@ -61,63 +51,35 @@ public class SpinAttackWeapon : BaseWeapon
     {
         isSpinning = true;
 
-        // Create orbiting weapons
         CreateOrbitingWeapons();
-
-        // Start orbit animation
         StartCoroutine(OrbitAnimation());
-
-        // Continuously damage enemies during spin
         StartCoroutine(ContinuousDamage());
 
-        // Wait for spin duration
-        yield return new WaitForSeconds(spinDuration);
+        yield return new WaitForSeconds(GetSpinDuration());
 
-        // Clean up
         DestroyOrbitingWeapons();
         isSpinning = false;
     }
 
     void CreateOrbitingWeapons()
     {
-        if (player == null)
+        for (int i = 0; i < GetWeaponCount(); i++)
         {
-            Debug.LogError("SpinAttackWeapon: Player reference is null in CreateOrbitingWeapons!");
-            return;
-        }
+            GameObject weapon = spinEffectPrefab != null
+                ? Instantiate(spinEffectPrefab, player.position, Quaternion.identity)
+                : CreateSimpleWeapon();
 
-        for (int i = 0; i < weaponCount; i++)
-        {
-            GameObject weapon;
+            if (showTrail) AddTrailEffect(weapon);
 
-            // Use spinEffectPrefab if available, otherwise create simple weapon
-            if (spinEffectPrefab != null)
-            {
-                weapon = Instantiate(spinEffectPrefab, player.position, Quaternion.identity);
-            }
-            else
-            {
-                // Create simple weapon representation
-                weapon = CreateSimpleWeapon();
-            }
-
-            // Add trail effect
-            if (showTrail)
-            {
-                AddTrailEffect(weapon);
-            }
-
-            // Add collider for damage detection
             if (weapon.GetComponent<Collider2D>() == null)
             {
-                CircleCollider2D collider = weapon.AddComponent<CircleCollider2D>();
-                collider.isTrigger = true;
-                collider.radius = 0.5f;
+                CircleCollider2D col = weapon.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.5f;
             }
 
-            // Add weapon component for damage
             WeaponDamager damager = weapon.AddComponent<WeaponDamager>();
-            damager.damage = damage;
+            damager.damage = GetDamage();
             damager.knockbackForce = 8f;
 
             orbitingWeapons.Add(weapon);
@@ -127,12 +89,9 @@ public class SpinAttackWeapon : BaseWeapon
     GameObject CreateSimpleWeapon()
     {
         GameObject weapon = new GameObject("OrbitingWeapon");
-
-        // Add sprite renderer
         SpriteRenderer sr = weapon.AddComponent<SpriteRenderer>();
-        sr.sprite = GetComponent<SpriteRenderer>()?.sprite; // Use same sprite as main weapon
+        sr.sprite = GetComponent<SpriteRenderer>()?.sprite;
         sr.color = Color.white;
-
         return weapon;
     }
 
@@ -151,30 +110,23 @@ public class SpinAttackWeapon : BaseWeapon
     {
         float timer = 0f;
 
-        while (timer < spinDuration && player != null)
+        while (timer < GetSpinDuration() && player != null)
         {
             timer += Time.deltaTime;
-
             for (int i = 0; i < orbitingWeapons.Count; i++)
             {
-                if (orbitingWeapons[i] != null)
-                {
-                    // Calculate angle for this weapon
-                    float baseAngle = (timer * orbitSpeed) % 360f;
-                    float weaponAngle = baseAngle + (i * (360f / weaponCount));
+                if (orbitingWeapons[i] == null) continue;
 
-                    // Calculate position
-                    Vector3 offset = new Vector3(
-                        Mathf.Cos(weaponAngle * Mathf.Deg2Rad) * orbitRadius,
-                        Mathf.Sin(weaponAngle * Mathf.Deg2Rad) * orbitRadius,
-                        0
-                    );
+                float baseAngle = (timer * orbitSpeed) % 360f;
+                float weaponAngle = baseAngle + (i * (360f / GetWeaponCount()));
+                Vector3 offset = new Vector3(
+                    Mathf.Cos(weaponAngle * Mathf.Deg2Rad) * GetOrbitRadius(),
+                    Mathf.Sin(weaponAngle * Mathf.Deg2Rad) * GetOrbitRadius(),
+                    0
+                );
 
-                    orbitingWeapons[i].transform.position = player.position + offset;
-
-                    // Rotate weapon to face movement direction
-                    orbitingWeapons[i].transform.rotation = Quaternion.Euler(0, 0, weaponAngle + 90f);
-                }
+                orbitingWeapons[i].transform.position = player.position + offset;
+                orbitingWeapons[i].transform.rotation = Quaternion.Euler(0, 0, weaponAngle + 90f);
             }
 
             yield return null;
@@ -187,29 +139,31 @@ public class SpinAttackWeapon : BaseWeapon
 
         while (isSpinning)
         {
-            // Check for enemies in range of each orbiting weapon
             foreach (GameObject weapon in orbitingWeapons)
             {
-                if (weapon != null)
+                if (weapon == null) continue;
+
+                Collider2D[] enemies = Physics2D.OverlapCircleAll(weapon.transform.position, 0.5f);
+
+                foreach (var enemy in enemies)
                 {
-                    Collider2D[] enemies = Physics2D.OverlapCircleAll(weapon.transform.position, 0.5f);
-
-                    foreach (var enemy in enemies)
+                    if (enemy.CompareTag("Enemy") && !damagedEnemies.Contains(enemy.gameObject))
                     {
-                        if (enemy.CompareTag("Enemy") && !damagedEnemies.Contains(enemy.gameObject))
+                        DamageEnemy(enemy.gameObject, GetDamage());
+
+                        Vector2 knockbackDir = (enemy.transform.position - player.position).normalized;
+                        Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
+                        if (rb != null)
                         {
-                            DamageEnemy(enemy.gameObject, damage);
-
-                            Vector2 knockbackDir = (enemy.transform.position - player.position).normalized;
-                            // ApplyKnockback(enemy.gameObject, knockbackDir, 8f);
-
-                            damagedEnemies.Add(enemy.gameObject);
+                            rb.AddForce(knockbackDir * 8f, ForceMode2D.Impulse);
                         }
+
+                        damagedEnemies.Add(enemy.gameObject);
                     }
                 }
             }
 
-            yield return new WaitForSeconds(0.1f); // Check every 0.1 seconds
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -217,31 +171,42 @@ public class SpinAttackWeapon : BaseWeapon
     {
         foreach (GameObject weapon in orbitingWeapons)
         {
-            if (weapon != null)
-            {
-                Destroy(weapon);
-            }
+            if (weapon != null) Destroy(weapon);
         }
         orbitingWeapons.Clear();
     }
 
+    // ----------- Upgrade Methods -------------
+
+    public void UpgradeWeapon()
+    {
+        if (level >= maxLevel)
+        {
+            Debug.Log("SpinWeapon already max level!");
+            return;
+        }
+
+        level++;
+        Debug.Log($"SpinWeapon upgraded to level {level}");
+    }
+
+    private float GetDamage() => damage + (level - 1) * damagePerLevel;
+    private float GetOrbitRadius() => orbitRadius + (level - 1) * radiusPerLevel;
+    private float GetSpinDuration() => spinDuration + (level - 1) * durationPerLevel;
+    private int GetWeaponCount() => weaponCount + (level - 1) * weaponCountPerLevel;
+
     void OnDrawGizmosSelected()
     {
-        // Auto-assign player if not set (for editor)
         if (player == null)
         {
             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                player = playerObj.transform;
-            }
+            if (playerObj != null) player = playerObj.transform;
         }
 
         if (player != null)
         {
-            // Draw orbit radius
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(player.position, orbitRadius);
+            Gizmos.DrawWireSphere(player.position, GetOrbitRadius());
         }
     }
 }

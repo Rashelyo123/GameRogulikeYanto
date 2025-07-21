@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 1907931251571269223}
   - component: {fileID: 5314830872322264478}
   - component: {fileID: 2491683838256200108}
-  m_Layer: 0
-  m_Name: Enemy
+  m_Layer: 3
+  m_Name: pocong
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0d5815ea876d754f8d6f8e827b81005, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 3
+  maxHealth: 10
   moveSpeed: 1
   damage: 8
   enemyData: {fileID: 11400000, guid: 86ce5de52b78d724eb44ddbf94ecdb22, type: 2}

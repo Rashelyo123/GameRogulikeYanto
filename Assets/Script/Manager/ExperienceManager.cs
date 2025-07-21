@@ -331,32 +331,58 @@ public class ExperienceManager : MonoBehaviour
                 if (unlockedWeapons.Contains(UpgradeType.UnlockWeaponPaku) &&
                     (upgradeLevels.ContainsKey(UpgradeType.UpgradeWeaponPaku) && upgradeLevels[UpgradeType.UpgradeWeaponPaku] < maxUpgradeLevel))
                 {
-                    // Upgrade logic for Paku weapon
-                    // Example: weaponPaku.GetComponent<Weapon>().UpgradeDamage(1.2f);
+
+                    BasicWeapon basicWeapon = FindAnyObjectByType<BasicWeapon>();
+                    if (basicWeapon != null)
+                    {
+                        basicWeapon.UpgradeWeapon();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("BasicWeapon component not found for Paku upgrade!");
+                    }
                 }
                 break;
             case UpgradeType.UpgradeWeaponKeris:
                 if (unlockedWeapons.Contains(UpgradeType.UnlockWeaponKeris) &&
                     (upgradeLevels.ContainsKey(UpgradeType.UpgradeWeaponKeris) && upgradeLevels[UpgradeType.UpgradeWeaponKeris] < maxUpgradeLevel))
                 {
-                    // Upgrade logic for Keris weapon
-                    // Example: hoomingWeapon.UpgradeDamage(1.2f);
+                    KerisWeapon kerisWeapon = FindAnyObjectByType<KerisWeapon>();
+                    if (kerisWeapon != null)
+                    {
+                        kerisWeapon.SetSpawnCount(1 + 1);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("KerisWeapon component not found for Keris upgrade!");
+                    }
                 }
                 break;
             case UpgradeType.UpgradeWeaponBukuMantra:
                 if (unlockedWeapons.Contains(UpgradeType.UnlockWeaponBukuMantra) &&
                     (upgradeLevels.ContainsKey(UpgradeType.UpgradeWeaponBukuMantra) && upgradeLevels[UpgradeType.UpgradeWeaponBukuMantra] < maxUpgradeLevel))
                 {
-                    // Upgrade logic for Buku Mantra weapon
-                    // Example: rangeWeapon.UpgradeDamage(1.2f);
+                    SpinAttackWeapon bukuMantra = FindAnyObjectByType<SpinAttackWeapon>();
+                    if (bukuMantra != null)
+                    {
+                        bukuMantra.UpgradeWeapon();
+
+                    }
                 }
                 break;
             case UpgradeType.UpgradeWeaponBonekaSantet:
                 if (unlockedWeapons.Contains(UpgradeType.UnlockWeaponBonekaSantet) &&
                     (upgradeLevels.ContainsKey(UpgradeType.UpgradeWeaponBonekaSantet) && upgradeLevels[UpgradeType.UpgradeWeaponBonekaSantet] < maxUpgradeLevel))
                 {
-                    // Upgrade logic for Boneka Santet weapon
-                    // Example: bonekaSantetWeapon.UpgradeDamage(1.2f);
+                    Weapon_SingleTarget bonekaSantet = FindAnyObjectByType<Weapon_SingleTarget>();
+                    if (bonekaSantet != null)
+                    {
+                        bonekaSantet.UpgradeWeapon();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Weapon_SingleTarget component not found for Boneka Santet upgrade!");
+                    }
                 }
                 break;
         }

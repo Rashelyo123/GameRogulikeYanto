@@ -17,9 +17,15 @@ public class PlayerStats : MonoBehaviour
     //Script Dependencies
     private PlayerController playerController;
     private PlayerHealth playerHealth;
-    private BasicWeapon rangeWeapon;
+    // WeaponPrimary
     private WeaponSlice meleeWeapon;
+    private AirGarem airGarem;
+
+    // WeaponSecondary
     private KerisWeapon hoomingWeapon;
+    private BasicWeapon rangeWeapon;
+    private Weapon_SingleTarget bonekaSantet;
+    private SpinAttackWeapon BukuMantra;
     [Space(10)]
 
     [Header("Text Stats")]
@@ -39,6 +45,9 @@ public class PlayerStats : MonoBehaviour
         rangeWeapon = GetComponentInChildren<BasicWeapon>();
         meleeWeapon = GetComponentInChildren<WeaponSlice>();
         hoomingWeapon = GetComponentInChildren<KerisWeapon>();
+        bonekaSantet = GetComponentInChildren<Weapon_SingleTarget>();
+        BukuMantra = GetComponentInChildren<SpinAttackWeapon>();
+
 
         if (playerController == null) Debug.LogWarning("PlayerController not found!");
         if (playerHealth == null) Debug.LogWarning("PlayerHealth not found!");
@@ -59,6 +68,7 @@ public class PlayerStats : MonoBehaviour
     void Update()
     {
         UpdateStatTexts();
+
     }
     void UpdateStatTexts()
     {
@@ -86,7 +96,7 @@ public class PlayerStats : MonoBehaviour
         strength *= multiplier;
         if (meleeWeapon != null)
         {
-            // meleeWeapon.UpgradeDamage(multiplier);
+            meleeWeapon.UpgradeDamage(multiplier);
         }
     }
 
@@ -108,7 +118,7 @@ public class PlayerStats : MonoBehaviour
         }
         if (meleeWeapon != null)
         {
-            // meleeWeapon.UpgradeFireRate(multiplier);
+            //meleeWeapon.UpgradeFireRate(multiplier);
         }
     }
 
@@ -132,11 +142,7 @@ public class PlayerStats : MonoBehaviour
         {
             rangeWeapon.SetCriticalChance(luck);
         }
-        if (hoomingWeapon != null)
-        {
-            // hoomingWeapon.SetCriticalChance(luck);
-            // hoomingWeapon.UpgradeWeapon();
-        }
+
     }
 
     public void UpgradeDodgeCount(int amount)
@@ -145,6 +151,40 @@ public class PlayerStats : MonoBehaviour
         if (playerController != null)
         {
             playerController.SetMaxDodgeCount(dodgeCount);
+        }
+    }
+
+
+    // upgrade weaponSecondary
+    public void UpgradeSeccondPaku()
+    {
+        if (rangeWeapon != null)
+        {
+            rangeWeapon.UpgradeWeapon();
+        }
+
+    }
+    public void UpgradeSeccHoomingWeapon(int newCount)
+    {
+        if (hoomingWeapon != null)
+        {
+            hoomingWeapon.SetSpawnCount(newCount + 1);
+        }
+    }
+
+    public void UpgradeSeccBonekaSantet()
+    {
+        if (bonekaSantet != null)
+        {
+            bonekaSantet.UpgradeWeapon();
+        }
+    }
+
+    public void UpgradeSeccBukuMantra()
+    {
+        if (BukuMantra != null)
+        {
+            BukuMantra.UpgradeWeapon();
         }
     }
 

@@ -127,8 +127,7 @@ public class EnemySpawner : MonoBehaviour
             spawnRate *= difficultyMultiplier;
             maxEnemiesOnScreen = Mathf.RoundToInt(maxEnemiesOnScreen * difficultyMultiplier);
 
-            // Optional: Show wave notification
-            Debug.Log($"Wave {currentWave}! Spawn Rate: {spawnRate:F1}, Max Enemies: {maxEnemiesOnScreen}");
+
         }
     }
 

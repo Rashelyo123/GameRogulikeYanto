@@ -119,7 +119,7 @@ public class Enemy : MonoBehaviour
         // Start death animation
         StartCoroutine(DeathAnimation());
 
-        Debug.Log("Enemy died!");
+
     }
 
     IEnumerator DeathAnimation()
@@ -208,7 +208,7 @@ public class Enemy : MonoBehaviour
         // Damage player saat collision
         if (other.CompareTag("Player"))
         {
-            Debug.Log("Player hit by enemy!");
+            //            Debug.Log("Player hit by enemy!");
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             playerHealth?.TakeDamage(damage);
         }
