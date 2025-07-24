@@ -22,13 +22,40 @@ public class Enemy : MonoBehaviour
 
     private float currentHealth;
     private Transform player;
-    private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
     private bool isDying = false;
 
+    // Object Pooling Support
+    private EnemySpawner spawner;
+    private GameObject originalPrefab;
+    private bool isPooled = false;
+    private Coroutine distanceCheckCoroutine;
+
+    // Movement without Rigidbody
+    private Vector2 currentVelocity = Vector2.zero;
+
+    #region Initialization
     void Start()
     {
-        // Pastikan enemyData ada
+        InitializeEnemy();
+    }
+
+    public void InitializeForPooling(EnemySpawner enemySpawner, GameObject prefab)
+    {
+        spawner = enemySpawner;
+        originalPrefab = prefab;
+        isPooled = true;
+
+        InitializeEnemy();
+    }
+
+    void InitializeEnemy()
+    {
+        // Reset state
+        isDying = false;
+        currentVelocity = Vector2.zero;
+
+        // Setup enemy data
         if (enemyData != null)
         {
             currentHealth = enemyData.maxHealth;
@@ -42,25 +69,53 @@ public class Enemy : MonoBehaviour
         }
 
         // Initialize components
-        rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        rb.gravityScale = 0f;
+
+        // Reset sprite
+        if (spriteRenderer != null)
+        {
+            Color originalColor = spriteRenderer.color;
+            spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, 1f);
+        }
+
+        // Re-enable collider
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = true;
+            col.isTrigger = true; // Always use trigger for performance
+        }
 
         // Find player
+        FindPlayer();
+
+        // Start distance checking
+        if (distanceCheckCoroutine != null)
+            StopCoroutine(distanceCheckCoroutine);
+        distanceCheckCoroutine = StartCoroutine(CheckDistanceFromPlayer());
+    }
+
+    void FindPlayer()
+    {
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             player = playerObj.transform;
         }
-
-        StartCoroutine(CheckDistanceFromPlayer());
     }
+    #endregion
 
-    void FixedUpdate()
+    #region Movement (No Rigidbody)
+    void Update()
     {
         if (!isDying)
         {
             MoveTowardsPlayer();
+        }
+        else
+        {
+            // Apply knockback velocity during death
+            ApplyVelocity();
         }
     }
 
@@ -69,13 +124,25 @@ public class Enemy : MonoBehaviour
         if (player != null)
         {
             Vector2 direction = (player.position - transform.position).normalized;
-            rb.velocity = direction * moveSpeed;
+            currentVelocity = direction * moveSpeed;
+
+            // Apply movement
+            ApplyVelocity();
 
             // Flip sprite berdasarkan direction
-            spriteRenderer.flipX = direction.x > 0;
+            if (spriteRenderer != null)
+                spriteRenderer.flipX = direction.x > 0;
         }
     }
 
+    void ApplyVelocity()
+    {
+        // Move using transform (no physics)
+        transform.position += (Vector3)currentVelocity * Time.deltaTime;
+    }
+    #endregion
+
+    #region Damage & Death
     public void TakeDamage(float damageAmount)
     {
         if (isDying) return; // Prevent taking damage while dying
@@ -98,6 +165,13 @@ public class Enemy : MonoBehaviour
         if (isDying) return; // Prevent multiple death calls
         isDying = true;
 
+        // Stop distance checking
+        if (distanceCheckCoroutine != null)
+        {
+            StopCoroutine(distanceCheckCoroutine);
+            distanceCheckCoroutine = null;
+        }
+
         // Update UI
         UIManager uiManager = FindObjectOfType<UIManager>();
         if (uiManager != null)
@@ -106,70 +180,154 @@ public class Enemy : MonoBehaviour
         }
 
         // Spawn XP orb
-        if (xpOrbPrefab != null)
+        SpawnXPOrb();
+
+        // Handle death based on pooling status
+        if (isPooled)
         {
-            GameObject orb = Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
-            XPOrb orbScript = orb.GetComponent<XPOrb>();
-            if (orbScript != null && enemyData != null)
-            {
-                orbScript.xpValue = enemyData.xpDropAmount;
-            }
+            StartCoroutine(DeathAnimationPooledNoRB());
         }
-
-        // Start death animation
-        StartCoroutine(DeathAnimation());
-
-
+        else
+        {
+            StartCoroutine(DeathAnimationNoRB());
+        }
     }
 
-    IEnumerator DeathAnimation()
+    void SpawnXPOrb()
     {
-        // Disable collision
+        if (enemyData != null)
+        {
+            // Use XP Orb Manager for pooled spawning
+            if (XPOrbManager.Instance != null)
+            {
+                XPOrbManager.Instance.SpawnXPOrb(transform.position, enemyData.xpDropAmount);
+            }
+            else
+            {
+                // Fallback: traditional instantiate method
+                if (xpOrbPrefab != null)
+                {
+                    GameObject orb = Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
+                    XPOrb orbScript = orb.GetComponent<XPOrb>();
+                    if (orbScript != null)
+                    {
+                        orbScript.xpValue = enemyData.xpDropAmount;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Fallback: use default XP value
+            if (XPOrbManager.Instance != null)
+            {
+                XPOrbManager.Instance.SpawnXPOrb(transform.position, 1f);
+            }
+            else if (xpOrbPrefab != null)
+            {
+                Instantiate(xpOrbPrefab, transform.position, Quaternion.identity);
+            }
+        }
+    }
+    #endregion
+
+    #region Death Animations (No Rigidbody)
+    IEnumerator DeathAnimationNoRB()
+    {
+        // Original death animation for non-pooled enemies (no RB)
         Collider2D col = GetComponent<Collider2D>();
         if (col != null)
         {
             col.enabled = false;
         }
 
-        // Knockback away from player (more predictable)
-        Vector2 knockbackDirection = Vector2.zero;
-        if (player != null)
-        {
-            // Push away from player
-            knockbackDirection = (transform.position - player.position).normalized;
-            // Add slight random variation (much smaller)
-            knockbackDirection += new Vector2(Random.Range(-0.3f, 0.3f), Random.Range(-0.2f, 0.2f));
-            knockbackDirection = knockbackDirection.normalized;
-        }
-        else
-        {
-            // Fallback random direction if no player
-            knockbackDirection = new Vector2(Random.Range(-1f, 1f), 0f).normalized;
-        }
+        Vector2 knockbackDirection = GetKnockbackDirection();
+        Vector2 startPosition = transform.position;
 
-        // Apply knockback force
-        rb.velocity = knockbackDirection * knockbackForce;
+        // Set knockback velocity
+        currentVelocity = knockbackDirection * knockbackForce;
 
-        // Fade out over time
         float timer = 0f;
         Color originalColor = spriteRenderer.color;
 
         while (timer < fadeTime)
         {
             timer += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, timer / fadeTime);
-            spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+            float progress = timer / fadeTime;
 
-            // Gradually reduce knockback
-            rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, Time.deltaTime * 3f);
+            // Fade alpha
+            float alpha = Mathf.Lerp(1f, 0f, progress);
+            if (spriteRenderer != null)
+                spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+
+            // Reduce knockback velocity over time
+            currentVelocity = Vector2.Lerp(currentVelocity, Vector2.zero, Time.deltaTime * 3f);
 
             yield return null;
         }
 
-        // Destroy the enemy
         Destroy(gameObject);
     }
 
+    IEnumerator DeathAnimationPooledNoRB()
+    {
+        // Modified death animation for pooled enemies (no RB)
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.enabled = false;
+        }
+
+        Vector2 knockbackDirection = GetKnockbackDirection();
+        Vector2 startPosition = transform.position;
+
+        // Set knockback velocity
+        currentVelocity = knockbackDirection * knockbackForce;
+
+        float timer = 0f;
+        Color originalColor = spriteRenderer.color;
+
+        while (timer < fadeTime)
+        {
+            timer += Time.deltaTime;
+            float progress = timer / fadeTime;
+
+            // Fade alpha
+            float alpha = Mathf.Lerp(1f, 0f, progress);
+            if (spriteRenderer != null)
+                spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+
+            // Reduce knockback velocity over time
+            currentVelocity = Vector2.Lerp(currentVelocity, Vector2.zero, Time.deltaTime * 3f);
+
+            yield return null;
+        }
+
+        // Reset velocity before returning to pool
+        currentVelocity = Vector2.zero;
+
+        // Return to pool instead of destroying
+        ReturnToPool();
+    }
+
+    Vector2 GetKnockbackDirection()
+    {
+        Vector2 knockbackDirection = Vector2.zero;
+        if (player != null)
+        {
+            knockbackDirection = (transform.position - player.position).normalized;
+            knockbackDirection += new Vector2(Random.Range(-0.3f, 0.3f), Random.Range(-0.2f, 0.2f));
+            knockbackDirection = knockbackDirection.normalized;
+        }
+        else
+        {
+            knockbackDirection = new Vector2(Random.Range(-1f, 1f), 0f).normalized;
+        }
+        return knockbackDirection;
+    }
+    #endregion
+
+    #region Visual Effects
     IEnumerator FlashRed()
     {
         if (spriteRenderer != null && !isDying)
@@ -177,40 +335,98 @@ public class Enemy : MonoBehaviour
             Color original = spriteRenderer.color;
             spriteRenderer.color = Color.red;
             yield return new WaitForSeconds(0.1f);
-            spriteRenderer.color = original;
+            if (spriteRenderer != null) // Check if still exists
+                spriteRenderer.color = original;
         }
     }
+    #endregion
 
+    #region Cleanup & Pooling
     IEnumerator CheckDistanceFromPlayer()
     {
         while (!isDying)
         {
-            yield return new WaitForSeconds(2f); // Check every 2 seconds
+            yield return new WaitForSeconds(2f);
 
             if (player != null)
             {
                 float distance = Vector2.Distance(transform.position, player.position);
 
-                // Destroy enemy jika terlalu jauh (optimization)
                 if (distance > maxDistanceFromPlayer)
                 {
-                    Destroy(gameObject);
+                    if (isPooled)
+                    {
+                        ReturnToPool();
+                    }
+                    else
+                    {
+                        Destroy(gameObject);
+                    }
                     break;
                 }
             }
         }
     }
 
+    void ReturnToPool()
+    {
+        // Stop all coroutines
+        StopAllCoroutines();
+
+        // Reset state
+        isDying = false;
+        currentVelocity = Vector2.zero;
+
+        if (spawner != null && originalPrefab != null)
+        {
+            spawner.ReturnEnemyToPool(gameObject, originalPrefab);
+        }
+        else
+        {
+            // Fallback: destroy if can't return to pool
+            Destroy(gameObject);
+        }
+    }
+
+    public void ForceReturnToPool()
+    {
+        ReturnToPool();
+    }
+    #endregion
+
+    #region Collision
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (isDying) return; // Don't damage player while dying
+        if (isDying) return;
 
-        // Damage player saat collision
         if (other.CompareTag("Player"))
         {
-            //            Debug.Log("Player hit by enemy!");
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             playerHealth?.TakeDamage(damage);
         }
     }
+    #endregion
+
+    #region Unity Events
+    void OnDisable()
+    {
+        // Clean up when object is disabled
+        if (distanceCheckCoroutine != null)
+        {
+            StopCoroutine(distanceCheckCoroutine);
+            distanceCheckCoroutine = null;
+        }
+        currentVelocity = Vector2.zero;
+    }
+
+    void OnDestroy()
+    {
+        // Clean up when object is destroyed
+        if (distanceCheckCoroutine != null)
+        {
+            StopCoroutine(distanceCheckCoroutine);
+            distanceCheckCoroutine = null;
+        }
+    }
+    #endregion
 }

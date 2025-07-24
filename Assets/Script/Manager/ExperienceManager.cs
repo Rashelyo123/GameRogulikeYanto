@@ -350,7 +350,7 @@ public class ExperienceManager : MonoBehaviour
                     KerisWeapon kerisWeapon = FindAnyObjectByType<KerisWeapon>();
                     if (kerisWeapon != null)
                     {
-                        kerisWeapon.SetSpawnCount(1 + 1);
+                        kerisWeapon.UpgradeWeapon();
                     }
                     else
                     {

@@ -6,6 +6,9 @@ public class HomingProjectile : MonoBehaviour
     public float speed = 5f;
     public float rotateSpeed = 200f;
     private bool hasHitPlayer = false;
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip hitSound;
+
 
 
     void Start()
@@ -48,6 +51,7 @@ public class HomingProjectile : MonoBehaviour
             if (enemy != null && !hasHitPlayer)
             {
                 enemy.TakeDamage(2);
+
 
             }
         }

@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using Unity.VisualScripting;
+using System.Collections;
 
 public class ChoseWeaponMenu : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class ChoseWeaponMenu : MonoBehaviour
     public Button playGameButton;
     public TextMeshProUGUI weaponDescriptionText;
     public TextMeshProUGUI weaponSkillDescriptionText;
+
+    [SerializeField] private GameObject TransisiOut;
 
 
     void Start()
@@ -61,8 +64,14 @@ public class ChoseWeaponMenu : MonoBehaviour
         }
 
     }
+    private IEnumerator Transisi()
+    {
+        TransisiOut.SetActive(true);
+        yield return new WaitForSeconds(1f);
+        SceneManager.LoadScene("MainGameplay");
+    }
     void PlayGame()
     {
-        SceneManager.LoadScene("MainGameplay");
+        StartCoroutine(Transisi());
     }
 }

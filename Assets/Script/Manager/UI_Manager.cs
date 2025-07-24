@@ -4,6 +4,7 @@ using System.Collections;
 using TMPro;
 using System;
 using System.Xml.Serialization;
+using UnityEngine.SceneManagement;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class UIManager : MonoBehaviour
     public GameObject gameUIPanel;
     public GameObject pauseMenuPanel;
     public GameObject gameOverPanel;
+    public GameObject TransisiOut;
     // public GameObject levelUpPanel;
 
     [Header("Game UI Elements")]
@@ -280,6 +282,20 @@ public class UIManager : MonoBehaviour
         Time.timeScale = 1f;
         UnityEngine.SceneManagement.SceneManager.LoadScene(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+    }
+    public void backToMainMenu()
+    {
+        StartCoroutine(Transisi());
+
+
+
+    }
+    private IEnumerator Transisi()
+    {
+        TransisiOut.SetActive(true);
+        yield return new WaitForSecondsRealtime(1f);
+        Time.timeScale = 1f; // Optional, jaga-jaga
+        SceneManager.LoadScene("MainMenu");
     }
 
     public void QuitGame()

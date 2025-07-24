@@ -11,7 +11,20 @@ public class WeaponSlice : MonoBehaviour
     public Transform attackOrigin;        // Child transform as slash origin
     public GameObject slashVFXPrefab;     // Prefab for slash visual
     private float timer = 0f;
+    [Header("Upgrade Settings")]
+    public int currentLevel = 1;
+    public int maxLevel = 5;
+    public float criticalChance = 0.1f;     // 10% default
+    public float criticalMultiplier = 2f;
+    public float sizeMultiplierPerLevel = 0.2f; // Scale increase per level
 
+    [Header("SFX Settings")]
+    public AudioClip slashSound;
+    public AudioSource audioSource;
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
     void Update()
     {
         timer += Time.deltaTime;
@@ -43,11 +56,23 @@ public class WeaponSlice : MonoBehaviour
         // Spawn slash at calculated position, rotated towards mouse direction
         if (slashVFXPrefab)
         {
+            audioSource.PlayOneShot(slashSound);
             GameObject vfx = Instantiate(slashVFXPrefab, slashPosition, Quaternion.Euler(0f, 0f, angle), attackOrigin);
             slashProjectile projectile = vfx.GetComponentInChildren<slashProjectile>();
             if (projectile != null)
             {
-                projectile.SetDamage((int)damage); // Set damage dari WeaponSlice
+                float finalDamage = damage;
+                bool isCritical = Random.value <= criticalChance;
+                if (isCritical)
+                {
+                    finalDamage *= criticalMultiplier;
+                    Debug.Log("Critical Hit!");
+                }
+                projectile.SetDamage((int)finalDamage);
+                float scaleMultiplier = 1f + (currentLevel - 1) * sizeMultiplierPerLevel;
+                vfx.transform.localScale *= scaleMultiplier;
+
+
             }
             Destroy(vfx, 0.5f);
         }
@@ -97,6 +122,27 @@ public class WeaponSlice : MonoBehaviour
             Gizmos.DrawWireSphere(attackOrigin.position, slashOffset);
         }
     }
+
+    public void UpgradeWeapon()
+    {
+        if (currentLevel >= maxLevel)
+        {
+            Debug.Log("Weapon sudah mencapai level maksimal!");
+            return;
+        }
+
+        currentLevel++;
+
+        // Meningkatkan damage secara bertahap
+        damage *= 1.25f;
+
+        // Meningkatkan critical chance tiap level (maks 50%)
+        criticalChance = Mathf.Min(criticalChance + 0.1f, 0.5f);
+
+        // Bisa ditambah visual feedback juga di sini
+        Debug.Log($"Weapon upgraded to level {currentLevel}! Damage: {damage}, Critical Chance: {criticalChance * 100}%");
+    }
+
     public void UpgradeDamage(float multiplier)
     {
         damage *= multiplier;

@@ -44,14 +44,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb12ac460e7aa1e4e96eb885f90615e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  damage: 1.24
+  fireRate: 1.62
+  range: 3.65
+  criticalChance: 0.1
+  attackCooldown: 1
   projectilePrefab: {fileID: 8036729158533459555, guid: 82849d8d69526624abcc3b712d6f379b, type: 3}
   firePoint: {fileID: 8220086690401392437}
-  fireRate: 1.62
-  damage: 1.24
-  range: 3.65
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
+  weaponLevel: 1
+  maxLevel: 5
+  damagePerLevel:
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  critChancePerLevel:
+  - 0.1
+  - 0.15
+  - 0.2
+  - 0.25
+  - 0.3
+  cooldownPerLevel:
+  - 1
+  - 0.9
+  - 0.8
+  - 0.7
+  - 0.6
+  projectileCountPerLevel: 0100000001000000020000000200000003000000
 --- !u!1 &5359877889641033602
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,17 +116,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1872e5c7d536fb741b741d517a9d2c9e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  attackInterval: 1
   damage: 1
-  fireRate: 1
-  range: 5
-  enemyLayerMask:
+  attackRange: 2
+  attackAngle: 60
+  slashOffset: 1
+  enemyLayer:
     serializedVersion: 2
-    m_Bits: 4294967295
-  autoTargetRange: 8
-  requiresEnemyInRange: 1
-  sliceEffectPrefab: {fileID: 0}
-  sliceAngle: 90
-  sliceDuration: 0.3
+    m_Bits: 0
+  attackOrigin: {fileID: 0}
+  slashVFXPrefab: {fileID: 0}
 --- !u!1 &5582520012986509181
 GameObject:
   m_ObjectHideFlags: 0
@@ -292,7 +311,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -321,7 +340,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &5077208582283858717
@@ -366,6 +385,12 @@ MonoBehaviour:
   moveSpeed: 5
   acceleration: 34
   deceleration: 34
+  dodgeSpeed: 10
+  dodgeDuration: 0.3
+  dodgeCooldown: 2
+  maxDodgeCount: 2
+  useMovementFlip: 1
+  allowWeaponFlip: 1
 --- !u!114 &4874416723547687869
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -384,6 +409,17 @@ MonoBehaviour:
   levelUpPanel: {fileID: 0}
   upgradeButtonParent: {fileID: 0}
   upgradeButtonPrefab: {fileID: 6194871902853572019, guid: f3cf13ea0cbedb5438b87339c7ab4c6c, type: 3}
+  weaponPaku: {fileID: 0}
+  weaponKeris: {fileID: 0}
+  weaponBukuMantra: {fileID: 0}
+  weaponBonekaSantet: {fileID: 0}
+  weaponSpawnpoint: {fileID: 0}
+  weaponSlotContainer: {fileID: 0}
+  weaponSlotPrefab: {fileID: 0}
+  spritePaku: {fileID: 0}
+  spriteKeris: {fileID: 0}
+  spriteBukuMantra: {fileID: 0}
+  spriteBonekaSantet: {fileID: 0}
 --- !u!114 &7428363966516092427
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -47,6 +47,7 @@ public class PlayerStats : MonoBehaviour
         hoomingWeapon = GetComponentInChildren<KerisWeapon>();
         bonekaSantet = GetComponentInChildren<Weapon_SingleTarget>();
         BukuMantra = GetComponentInChildren<SpinAttackWeapon>();
+        airGarem = FindAnyObjectByType<AirGarem>();
 
 
         if (playerController == null) Debug.LogWarning("PlayerController not found!");
@@ -68,6 +69,28 @@ public class PlayerStats : MonoBehaviour
     void Update()
     {
         UpdateStatTexts();
+
+        if (airGarem == null)
+        {
+            airGarem = FindAnyObjectByType<AirGarem>();
+            if (airGarem != null)
+            {
+                Debug.Log("AirGarem ditemukan setelah instantiate!");
+            }
+        }
+
+        if (meleeWeapon == null)
+        {
+            meleeWeapon = FindAnyObjectByType<WeaponSlice>();
+            if (meleeWeapon != null)
+            {
+                Debug.Log("MouseSliceWeapon ditemukan setelah instantiate!");
+            }
+        }
+
+
+
+
 
     }
     void UpdateStatTexts()
@@ -96,7 +119,7 @@ public class PlayerStats : MonoBehaviour
         strength *= multiplier;
         if (meleeWeapon != null)
         {
-            meleeWeapon.UpgradeDamage(multiplier);
+            meleeWeapon.UpgradeWeapon();
         }
     }
 
@@ -107,6 +130,10 @@ public class PlayerStats : MonoBehaviour
         {
             rangeWeapon.UpgradeDamage(multiplier);
         }
+        if (airGarem != null)
+        {
+            airGarem.UpgradeLevel();
+        }
     }
 
     public void UpgradeWisdom(float multiplier)
@@ -116,9 +143,9 @@ public class PlayerStats : MonoBehaviour
         {
             rangeWeapon.UpgradeFireRate(multiplier);
         }
-        if (meleeWeapon != null)
+        if (airGarem != null)
         {
-            //meleeWeapon.UpgradeFireRate(multiplier);
+            airGarem.UpgradeLevel();
         }
     }
 
@@ -136,7 +163,7 @@ public class PlayerStats : MonoBehaviour
         luck = Mathf.Clamp(luck + amount, 0f, 1f);
         if (meleeWeapon != null)
         {
-            //meleeWeapon.SetCriticalChance(luck);
+            meleeWeapon.UpgradeWeapon();
         }
         if (rangeWeapon != null)
         {
